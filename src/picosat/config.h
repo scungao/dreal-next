@@ -1,0 +1,1 @@
+#define PICOSAT_VERSION "960"

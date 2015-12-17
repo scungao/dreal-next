@@ -261,7 +261,6 @@ else()
 endif()
 set(EXTRA_LIBS "nlopt" ${EXTRA_LIBS})
 
-
 ################################################################
 # External: Z3
 ################################################################
@@ -567,6 +566,7 @@ configure_file("${DREAL_SOURCE_DIR}/version.h.in" "${DREAL_BINARY_DIR}/version.h
 configure_file("${DREAL_SOURCE_DIR}/config.h.in" "${DREAL_BINARY_DIR}/config.h")
 include_directories("${DREAL_BINARY_DIR}")
 add_subdirectory(opensmt)
+add_subdirectory(picosat)
 ################################################################
 # PARSER: SMT2
 ################################################################
