@@ -130,44 +130,8 @@ public:
   inline bool isIntegral          ( ) const { return hasSymbolId( ENODE_ID_INTEGRAL    ); }
   inline bool isForall            ( ) const { return hasSymbolId( ENODE_ID_FORALL      ); }
   inline bool isExists            ( ) const { return hasSymbolId( ENODE_ID_EXISTS      ); }
-  /*
-  inline bool isBvslt             ( ) const { return hasSymbolId( ENODE_ID_BVSLT       ); }
-  inline bool isBvsgt             ( ) const { return hasSymbolId( ENODE_ID_BVSGT       ); }
-  inline bool isBvsle             ( ) const { return hasSymbolId( ENODE_ID_BVSLE       ); }
-  inline bool isBvsge             ( ) const { return hasSymbolId( ENODE_ID_BVSGE       ); }
-  inline bool isBvult             ( ) const { return hasSymbolId( ENODE_ID_BVULT       ); }
-  inline bool isBvugt             ( ) const { return hasSymbolId( ENODE_ID_BVUGT       ); }
-  inline bool isBvule             ( ) const { return hasSymbolId( ENODE_ID_BVULE       ); }
-  inline bool isBvuge             ( ) const { return hasSymbolId( ENODE_ID_BVUGE       ); }
-  inline bool isConcat            ( ) const { return hasSymbolId( ENODE_ID_CONCAT      ); }
-  inline bool isCbe               ( ) const { return hasSymbolId( ENODE_ID_CBE         ); }
-  inline bool isBvand             ( ) const { return hasSymbolId( ENODE_ID_BVAND       ); }
-  inline bool isBvor              ( ) const { return hasSymbolId( ENODE_ID_BVOR        ); }
-  inline bool isBvxor             ( ) const { return hasSymbolId( ENODE_ID_BVXOR       ); }
-  inline bool isBvnot             ( ) const { return hasSymbolId( ENODE_ID_BVNOT       ); }
-  inline bool isBvadd             ( ) const { return hasSymbolId( ENODE_ID_BVADD       ); }
-  inline bool isBvsub             ( ) const { return hasSymbolId( ENODE_ID_BVSUB       ); }
-  inline bool isBvmul             ( ) const { return hasSymbolId( ENODE_ID_BVMUL       ); }
-  inline bool isBvneg             ( ) const { return hasSymbolId( ENODE_ID_BVNEG       ); }
-  inline bool isBvlshr            ( ) const { return hasSymbolId( ENODE_ID_BVLSHR      ); }
-  inline bool isBvashr            ( ) const { return hasSymbolId( ENODE_ID_BVASHR      ); }
-  inline bool isBvshl             ( ) const { return hasSymbolId( ENODE_ID_BVSHL       ); }
-  inline bool isBvsrem            ( ) const { return hasSymbolId( ENODE_ID_BVSREM      ); }
-  inline bool isBvurem            ( ) const { return hasSymbolId( ENODE_ID_BVUREM      ); }
-  inline bool isBvsdiv            ( ) const { return hasSymbolId( ENODE_ID_BVSDIV      ); }
-  inline bool isBvudiv            ( ) const { return hasSymbolId( ENODE_ID_BVUDIV      ); }
-  inline bool isSignExtend        ( ) const { int i; return sscanf( car->getName( ), "sign_extend[%d]", &i ) == 1; }
-  bool        isSignExtend        ( int * );
-  inline bool isZeroExtend        ( ) const { return hasSymbolId( ENODE_ID_ZERO_EXTEND ); }
-  inline bool isBoolcast          ( ) const { return hasSymbolId( ENODE_ID_BOOLCAST    ); }
-  inline bool isWord1cast         ( ) const { return hasSymbolId( ENODE_ID_WORD1CAST   ); }
-  */
   inline bool isUp                ( ) const { return car->id > ENODE_ID_LAST && isAtom( ) && getArity( ) > 0; }
   inline bool isUf                ( ) const { return car->id > ENODE_ID_LAST && !isAtom( ) && getArity( ) > 0; }
-
-  //  inline bool isCostIncur       ( ) const { return hasSymbolId( ENODE_ID_CTINCUR ); }
-  //  inline bool isCostBound       ( ) const { return hasSymbolId( ENODE_ID_CTBOUND ); }
-
   bool        isVar               ( ) const; // True if it is a variable
   bool        isExistVar          ( ) const; // True if it is a exist variable
   bool        isForallVar         ( ) const; // True if it is a forall variable

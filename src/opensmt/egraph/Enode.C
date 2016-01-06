@@ -601,3 +601,5 @@ unordered_set<Enode *> Enode::get_constants() {
     else opensmt_error("unknown case value");
     return result;
 }
+
+

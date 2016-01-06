@@ -18,7 +18,8 @@ option(BUILD_STATIC_BIN "Build static binary"  OFF)
 option(BUILD_SHARED_LIB "Build shared library" OFF)
 option(USE_LOCAL_THIRD_PARTY "Use local third party libraries" OFF)
 option(TCMALLOC         "Use tcmalloc (a.k.a. gperftools)" ON)
-option(Z3               "Use Z3" OFF)
+option(Z3               "Use Z3" ON)
+option(CORE_ONLY	"No tests" ON)
 
 # Added for CTest
 include(CTest)
@@ -592,6 +593,32 @@ ADD_CUSTOM_COMMAND(
 # it as generated
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/opensmt/parsers/smt2/smt2parser.cc GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/opensmt/parsers/smt2/smt2lexer.cc GENERATED)
+
+################################################################
+# PARSER: LYPSYN
+################################################################
+# Create custom command for flex/lex (note the outputs)
+ADD_CUSTOM_COMMAND(
+  COMMAND ${FLEX_EXECUTABLE}
+  ARGS -o ${DREAL_BINARY_DIR}/tools/lypsyn/lypsynlexer.cc -Plypsyn
+  ${DREAL_SOURCE_DIR}/tools/lypsyn/lypsynlexer.ll
+  DEPENDS ${DREAL_SOURCE_DIR}/tools/lypsyn/lypsynlexer.ll
+  OUTPUT  ${DREAL_BINARY_DIR}/tools/lypsyn/lypsynlexer.cc
+  )
+# Create custom command for bison/yacc (note the DEPENDS)
+ADD_CUSTOM_COMMAND(
+  COMMAND ${BISON_EXECUTABLE}
+  ARGS -d --name-prefix=lypsyn -y ${DREAL_SOURCE_DIR}/tools/lypsyn/lypsynparser.yy
+  -o ${DREAL_BINARY_DIR}/tools/lypsyn/lypsynparser.cc
+  DEPENDS ${DREAL_BINARY_DIR}/tools/lypsyn/lypsynlexer.cc
+  DEPENDS ${DREAL_SOURCE_DIR}/tools/lypsyn/lypsynparser.yy
+  OUTPUT  ${DREAL_BINARY_DIR}/tools/lypsyn/lypsynparser.cc
+  )
+# Since parser.c does not exists yet when cmake is run, mark
+# it as generated
+SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/lypsyn/lypsynparser.cc GENERATED)
+SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/lypsyn/lypsynlexer.cc GENERATED)
+
 ################################################################
 # PARSER: DOP
 ################################################################
@@ -617,6 +644,7 @@ ADD_CUSTOM_COMMAND(
 # it as generated
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/dop/parsers/dop/dopparser.cc GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/dop/parsers/dop/doplexer.cc GENERATED)
+
 ################################################################
 # PARSER: BARON
 ################################################################
@@ -674,6 +702,7 @@ add_subdirectory(util)
 add_subdirectory(constraint)
 add_subdirectory(contractor)
 add_subdirectory(tools/dop)
+add_subdirectory(tools/lypsyn)
 add_subdirectory(api)
 
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${DREAL_BINARY_DIR}/lib")
@@ -681,11 +710,18 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${DREAL_BINARY_DIR}/lib")
 if((NOT APPLE) AND BUILD_SHARED_LIB)
   add_library(dreal SHARED ${DREAL_SRCS})
   add_library(dop SHARED ${DOP_SRCS})
+  add_library(lypsyn SHARED ${LYPSYN_SRCS})
 else()
   add_library(dreal ${DREAL_SRCS})
   add_library(dop ${DOP_SRCS})
+  add_library(lypsyn ${LYPSYN_SRCS})
 endif()
 
+add_dependencies(lypsyn IBEX)
+add_dependencies(lypsyn NLOPT)
+add_dependencies(lypsyn EASYLOGGINGPP)
+add_dependencies(lypsyn EZOPTIONPARSER)
+add_dependencies(lypsyn JSON)
 add_dependencies(dop IBEX)
 add_dependencies(dop NLOPT)
 add_dependencies(dop EASYLOGGINGPP)
@@ -696,6 +732,8 @@ add_dependencies(dreal NLOPT)
 add_dependencies(dreal EASYLOGGINGPP)
 add_dependencies(dreal EZOPTIONPARSER)
 add_dependencies(dreal JSON)
+
+
 if(SUPPORT_ODE)
   add_dependencies(dreal CAPD4)
   add_dependencies(dreal GSL)
@@ -717,30 +755,36 @@ target_link_libraries(dReal-bin dreal ${EXTRA_LIBS})
 
 if(NOT BUILD_STATIC_BIN)
   add_executable(dOp-bin tools/dop/main.cpp)
+  add_executable(lypsyn-bin tools/lypsyn/main.cpp)
   SET_TARGET_PROPERTIES(dOp-bin PROPERTIES OUTPUT_NAME dOp)
+  SET_TARGET_PROPERTIES(lypsyn-bin PROPERTIES OUTPUT_NAME lypsyn)
   if(${PYTHONLIBS_FOUND})
     target_link_libraries(dOp-bin dop dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
+    target_link_libraries(lypsyn-bin lypsyn dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
   else()
     target_link_libraries(dOp-bin dop dreal ${EXTRA_LIBS})
+    target_link_libraries(lypsyn-bin lypsyn dreal ${EXTRA_LIBS})
   endif()
 endif()
 
+if(NOT CORE_ONLY)
 #add tests
-add_subdirectory(tests/util)
-add_subdirectory(tests/nra)
-add_subdirectory(tests/c_api)
-add_subdirectory(tests/ibex)
-add_subdirectory(tests/picosat)
-add_subdirectory(tests/nlopt)
-add_subdirectory(tests/contractor)
-if(SUPPORT_ODE)
-  add_subdirectory(tests/capd4)
-  add_subdirectory(tests/gsl)
-  add_subdirectory(tests/nra_ode)
-  add_subdirectory(tests/drh)
-endif()
-if(Z3)
-  add_subdirectory(tests/z3)
+  add_subdirectory(tests/util)
+  add_subdirectory(tests/nra)
+  add_subdirectory(tests/c_api)
+  add_subdirectory(tests/ibex)
+  add_subdirectory(tests/picosat)
+  add_subdirectory(tests/nlopt)
+  add_subdirectory(tests/contractor)
+  if(SUPPORT_ODE)
+    add_subdirectory(tests/capd4)
+    add_subdirectory(tests/gsl)
+    add_subdirectory(tests/nra_ode)
+    add_subdirectory(tests/drh)
+  endif()
+  if(Z3)
+    add_subdirectory(tests/z3)
+  endif()
 endif()
 
 # Include style check
@@ -752,7 +796,8 @@ file(GLOB_RECURSE DREAL_SOURCES
   ${DREAL_SOURCE_DIR}/icp/*.cpp        ${DREAL_SOURCE_DIR}/icp/*.h
   ${DREAL_SOURCE_DIR}/dsolvers/*.cpp   ${DREAL_SOURCE_DIR}/dsolvers/*.h
   ${DREAL_SOURCE_DIR}/tests/*.cpp      ${DREAL_SOURCE_DIR}/tests/*.h
-  ${DREAL_SOURCE_DIR}/tools/dop/*.cpp  ${DREAL_SOURCE_DIR}/tools/dop/*.h)
+  ${DREAL_SOURCE_DIR}/tools/dop/*.cpp  ${DREAL_SOURCE_DIR}/tools/dop/*.h
+  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.cpp  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.h)
 add_style_check_target(style "${DREAL_SOURCES}")
 add_test(NAME style_check COMMAND ${DREAL_SOURCE_DIR}/cmake/Modules/cpplint.py "--filter=-readability/casting,-whitespace/line_length,-build/header_guard,-whitespace/indent,-runtime/references,-build/c++11,-runtime/int" ${DREAL_SOURCES})
 
@@ -768,7 +813,13 @@ if(NOT BUILD_STATIC_BIN)
             COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/dOp ${DREAL_SOURCE_DIR}/../bin/
   )
 endif()
-
+if(NOT BUILD_STATIC_BIN)
+  ADD_CUSTOM_COMMAND(TARGET lypsyn-bin
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DREAL_SOURCE_DIR}/../bin
+            COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/lypsyn ${DREAL_SOURCE_DIR}/../bin/
+  )
+endif()
 #########################################
 # CPack
 #########################################

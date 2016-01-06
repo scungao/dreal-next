@@ -173,6 +173,12 @@ public:
   Enode * mkTimes            ( Enode * );
   Enode * mkDiv              ( Enode * );
   Enode * mkUminus           ( Enode * );
+
+  inline Enode * mkPlus (Enode * e1, Enode * e2) { return mkPlus(cons(e1,e2)); }
+  inline Enode * mkMinus (Enode * e1, Enode * e2) { return mkMinus(cons(e1,e2)); }
+  inline Enode * mkTimes (Enode * e1, Enode * e2) { return mkTimes(cons(e1,e2)); }
+  inline Enode * mkDiv (Enode * e1, Enode * e2) { return mkDiv(cons(e1,e2)); }
+
   Enode * mkDistinct         ( Enode * );
   Enode * mkNot              ( Enode * );
   Enode * mkAnd              ( Enode * );
@@ -259,6 +265,8 @@ public:
   void    mkDefine           ( const char *, Enode * );
   Enode * mkLet              ( Enode * );
   Enode * getDefine          ( const char * );
+
+  Enode * mkDeriv	     (Enode *, Enode *); //returns symbolic derivative
 
   //Enode * makeNumberFromGmp  ( mpz_class &, const int );
 
