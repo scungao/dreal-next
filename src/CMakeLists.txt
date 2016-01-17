@@ -619,6 +619,35 @@ ADD_CUSTOM_COMMAND(
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/lypsyn/lypsynparser.cc GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/lypsyn/lypsynlexer.cc GENERATED)
 
+
+################################################################
+# PARSER: INV
+################################################################
+# Create custom command for flex/lex (note the outputs)
+ADD_CUSTOM_COMMAND(
+  COMMAND ${FLEX_EXECUTABLE}
+  ARGS -o ${DREAL_BINARY_DIR}/tools/inv/invlexer.cc -Pinv
+  ${DREAL_SOURCE_DIR}/tools/inv/invlexer.ll
+  DEPENDS ${DREAL_SOURCE_DIR}/tools/inv/invlexer.ll
+  OUTPUT  ${DREAL_BINARY_DIR}/tools/inv/invlexer.cc
+  )
+# Create custom command for bison/yacc (note the DEPENDS)
+ADD_CUSTOM_COMMAND(
+  COMMAND ${BISON_EXECUTABLE}
+  ARGS -d --name-prefix=inv -y ${DREAL_SOURCE_DIR}/tools/inv/invparser.yy
+  -o ${DREAL_BINARY_DIR}/tools/inv/invparser.cc
+  DEPENDS ${DREAL_BINARY_DIR}/tools/inv/invlexer.cc
+  DEPENDS ${DREAL_SOURCE_DIR}/tools/inv/invparser.yy
+  OUTPUT  ${DREAL_BINARY_DIR}/tools/inv/invparser.cc
+  )
+# Since parser.c does not exists yet when cmake is run, mark
+# it as generated
+SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/inv/invparser.cc GENERATED)
+SET_SOURCE_FILES_PROPERTIES(${DREAL_BINARY_DIR}/tools/inv/invlexer.cc GENERATED)
+
+
+
+
 ################################################################
 # PARSER: DOP
 ################################################################
@@ -703,6 +732,7 @@ add_subdirectory(constraint)
 add_subdirectory(contractor)
 add_subdirectory(tools/dop)
 add_subdirectory(tools/lypsyn)
+add_subdirectory(tools/inv)
 add_subdirectory(api)
 
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${DREAL_BINARY_DIR}/lib")
@@ -711,12 +741,19 @@ if((NOT APPLE) AND BUILD_SHARED_LIB)
   add_library(dreal SHARED ${DREAL_SRCS})
   add_library(dop SHARED ${DOP_SRCS})
   add_library(lypsyn SHARED ${LYPSYN_SRCS})
+  add_library(inv SHARED ${INV_SRCS})
 else()
   add_library(dreal ${DREAL_SRCS})
   add_library(dop ${DOP_SRCS})
   add_library(lypsyn ${LYPSYN_SRCS})
+  add_library(inv ${INV_SRCS})
 endif()
 
+add_dependencies(inv IBEX)
+add_dependencies(inv NLOPT)
+add_dependencies(inv EASYLOGGINGPP)
+add_dependencies(inv EZOPTIONPARSER)
+add_dependencies(inv JSON)
 add_dependencies(lypsyn IBEX)
 add_dependencies(lypsyn NLOPT)
 add_dependencies(lypsyn EASYLOGGINGPP)
@@ -755,15 +792,19 @@ target_link_libraries(dReal-bin dreal ${EXTRA_LIBS})
 
 if(NOT BUILD_STATIC_BIN)
   add_executable(dOp-bin tools/dop/main.cpp)
-  add_executable(lypsyn-bin tools/lypsyn/main.cpp)
+#  add_executable(lypsyn-bin tools/lypsyn/main.cpp)
+  add_executable(inv-bin tools/inv/main.cpp)
   SET_TARGET_PROPERTIES(dOp-bin PROPERTIES OUTPUT_NAME dOp)
-  SET_TARGET_PROPERTIES(lypsyn-bin PROPERTIES OUTPUT_NAME lypsyn)
+#  SET_TARGET_PROPERTIES(lypsyn-bin PROPERTIES OUTPUT_NAME lypsyn)
+  SET_TARGET_PROPERTIES(inv-bin PROPERTIES OUTPUT_NAME inv)
   if(${PYTHONLIBS_FOUND})
     target_link_libraries(dOp-bin dop dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
-    target_link_libraries(lypsyn-bin lypsyn dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
+#    target_link_libraries(lypsyn-bin lypsyn dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
+    target_link_libraries(inv-bin inv dreal ${PYTHON_LIBRARIES} ${EXTRA_LIBS})
   else()
     target_link_libraries(dOp-bin dop dreal ${EXTRA_LIBS})
-    target_link_libraries(lypsyn-bin lypsyn dreal ${EXTRA_LIBS})
+#    target_link_libraries(lypsyn-bin lypsyn dreal ${EXTRA_LIBS})
+    target_link_libraries(inv-bin inv dreal ${EXTRA_LIBS})
   endif()
 endif()
 
@@ -797,7 +838,8 @@ file(GLOB_RECURSE DREAL_SOURCES
   ${DREAL_SOURCE_DIR}/dsolvers/*.cpp   ${DREAL_SOURCE_DIR}/dsolvers/*.h
   ${DREAL_SOURCE_DIR}/tests/*.cpp      ${DREAL_SOURCE_DIR}/tests/*.h
   ${DREAL_SOURCE_DIR}/tools/dop/*.cpp  ${DREAL_SOURCE_DIR}/tools/dop/*.h
-  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.cpp  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.h)
+  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.cpp  ${DREAL_SOURCE_DIR}/tools/lypsyn/*.h
+  ${DREAL_SOURCE_DIR}/tools/inv/*.cpp  ${DREAL_SOURCE_DIR}/tools/inv/*.h)
 add_style_check_target(style "${DREAL_SOURCES}")
 add_test(NAME style_check COMMAND ${DREAL_SOURCE_DIR}/cmake/Modules/cpplint.py "--filter=-readability/casting,-whitespace/line_length,-build/header_guard,-whitespace/indent,-runtime/references,-build/c++11,-runtime/int" ${DREAL_SOURCES})
 
@@ -813,11 +855,18 @@ if(NOT BUILD_STATIC_BIN)
             COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/dOp ${DREAL_SOURCE_DIR}/../bin/
   )
 endif()
+#if(NOT BUILD_STATIC_BIN)
+#  ADD_CUSTOM_COMMAND(TARGET lypsyn-bin
+#            POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E make_directory ${DREAL_SOURCE_DIR}/../bin
+#            COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/lypsyn ${DREAL_SOURCE_DIR}/../bin/
+#  )
+#endif()
 if(NOT BUILD_STATIC_BIN)
-  ADD_CUSTOM_COMMAND(TARGET lypsyn-bin
+  ADD_CUSTOM_COMMAND(TARGET inv-bin
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DREAL_SOURCE_DIR}/../bin
-            COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/lypsyn ${DREAL_SOURCE_DIR}/../bin/
+            COMMAND ${CMAKE_COMMAND} -E copy ${DREAL_BINARY_DIR}/inv ${DREAL_SOURCE_DIR}/../bin/
   )
 endif()
 #########################################
