@@ -174,10 +174,10 @@ public:
   Enode * mkDiv              ( Enode * );
   Enode * mkUminus           ( Enode * );
 
-  inline Enode * mkPlus (Enode * e1, Enode * e2) { return mkPlus(cons(e1,e2)); }
-  inline Enode * mkMinus (Enode * e1, Enode * e2) { return mkMinus(cons(e1,e2)); }
-  inline Enode * mkTimes (Enode * e1, Enode * e2) { return mkTimes(cons(e1,e2)); }
-  inline Enode * mkDiv (Enode * e1, Enode * e2) { return mkDiv(cons(e1,e2)); }
+  inline Enode * mkPlus (Enode * e1, Enode * e2) { return mkPlus(cons(e1,cons(e2))); }
+  inline Enode * mkMinus (Enode * e1, Enode * e2) { return mkMinus(cons(e1,cons(e2))); }
+  inline Enode * mkTimes (Enode * e1, Enode * e2) { return mkTimes(cons(e1,cons(e2))); }
+  inline Enode * mkDiv (Enode * e1, Enode * e2) { return mkDiv(cons(e1,cons(e2))); }
 
   Enode * mkDistinct         ( Enode * );
   Enode * mkNot              ( Enode * );

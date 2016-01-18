@@ -148,9 +148,24 @@ Enode * make_vec_to_list(OpenSMTContext & ctx, vector<Enode *> v) {
 
 int process_main(OpenSMTContext & ctx,
                  config const & config) {
+
+ //   Enode * tmp = ctx.mkDiv(ctx.mkCons(ctx.mkVar("x"),ctx.mkCons(ctx.mkVar("y"))));
+ //   inv_barrier = ctx.mkDeriv(tmp,ctx.mkVar("x"));
+ 
+    Enode * tmp = ctx.mkDeriv(inv_barrier,ctx.mkVar("x"));
+    tmp -> print_infix(cout,l_True);
+ 
     Enode * pre = ctx.mkEq(ctx.mkCons(inv_barrier, ctx.mkCons(ctx.mkNum("0"))));
     Enode * post = ctx.mkLeq(ctx.mkCons(inv_barrierD, ctx.mkCons(ctx.mkNum("-0.001"))));
     Enode * formula = ctx.mkNot(ctx.mkCons(ctx.mkImplies(ctx.mkCons(pre,ctx.mkCons(post)))));
+
+//begin tests
+//    Enode * tmp = ctx.mkTimes(ctx.mkCons(ctx.mkVar("x"),ctx.mkCons(ctx.mkVar("y"))));
+//    Enode * invD = ctx.mkDeriv(tmp,ctx.mkVar("x"));
+//    invD = ctx.mkEq(ctx.mkCons(invD,ctx.mkCons(ctx.mkNum("1"))));
+//    Enode * formula = ctx.mkNot(ctx.mkCons(ctx.mkImplies(ctx.mkCons(invD,ctx.mkCons(post)))));
+//end tests
+
     ctx.Assert(formula);
     auto result = ctx.CheckSAT();
     cout << "Result     : ";

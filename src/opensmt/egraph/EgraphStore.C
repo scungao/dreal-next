@@ -2406,14 +2406,14 @@ Enode * Egraph::mkDeriv(Enode * e, Enode * v) {
             assert(e->getArity() == 1);
             Enode * f = e->get1st();
             Enode * f_p = mkDeriv(f, v);
-	    return mkTimes(mkUminus(mkDiv(one,mkSqrt(mkMinus(one, mkTimes(f,f))))),f_p);
+	    return mkTimes(mkUminus(cons(mkDiv(one,mkSqrt(cons(mkMinus(one, mkTimes(f,f))))))),f_p);
         }
         case ENODE_ID_ASIN: {
             // (asin f)' = (1 / sqrt(1 - f^2)) f'
             assert(e->getArity() == 1);
             Enode * f = e->get1st();
             Enode * f_p = mkDeriv(f, v);           
-	    return mkTimes(mkDiv(one,mkSqrt(mkMinus(one, mkTimes(f,f)))),f_p);
+	    return mkTimes(mkDiv(one,mkSqrt(cons(mkMinus(one, mkTimes(f,f))))),f_p);
         }
         case ENODE_ID_ATAN: {
             // (atan f)' = (1 / (1 + f^2)) * f'
@@ -2430,7 +2430,8 @@ Enode * Egraph::mkDeriv(Enode * e, Enode * v) {
             Enode * f_p = mkDeriv(f, v);
             Enode * g = e->get2nd();
             Enode * g_p = mkDeriv(g,v);
-            return mkDiv(mkPlus(mkTimes(mkUminus(g), f_p),mkTimes(f, g_p)), mkPlus(mkTimes(f,f),mkTimes(g,g)));
+            return mkDiv(mkPlus(mkTimes(mkUminus(cons(g)), f_p),mkTimes(f, g_p)), 
+							mkPlus(mkTimes(f,f),mkTimes(g,g)));
         }
         case ENODE_ID_MIN:
             assert(e->getArity() == 2);
@@ -2449,14 +2450,14 @@ Enode * Egraph::mkDeriv(Enode * e, Enode * v) {
             assert(e->getArity() == 1);
             Enode * f = e->get1st();
             Enode * f_p = mkDeriv(f, v);
-            return mkTimes(mkDiv(one,mkTimes(mkNum("2"),mkSqrt(f))), f_p);
+            return mkTimes(mkDiv(one,mkTimes(mkNum("2"),mkSqrt(cons(f)))), f_p);
         }
         case ENODE_ID_EXP: {
             // (exp f)' = (exp f) * f'
             assert(e->getArity() == 1);
             Enode * f = e->get1st();
             Enode * f_p = mkDeriv(f, v);
- 	    return mkTimes(mkExp(f),f_p);
+ 	    return mkTimes(mkExp(cons(f)),f_p);
  	
         }
         case ENODE_ID_LOG: {
@@ -2472,8 +2473,15 @@ Enode * Egraph::mkDeriv(Enode * e, Enode * v) {
             Enode * f = e->get1st();
             Enode * f_p = mkDeriv(f, v);
             Enode * g = e->get2nd();
-            Enode * g_p = mkDeriv(g,v);
-            return mkTimes(mkPow(cons(f, g)),mkDiv(mkTimes(f_p,g),mkPlus(f,mkTimes(g_p, mkLog(g)))));
+	    if (g->isConstant()) {
+	//	cout<<"numb!";
+		return mkTimes(mkTimes(g,mkPow(cons(f,cons(mkMinus(g,one))))),f_p);
+	    }
+	    else {
+	//	cout<<"not a number: " << g << std::endl;
+            	Enode * g_p = mkDeriv(g,v);
+            	return mkTimes(mkPow(cons(f, cons(g))),mkDiv(mkTimes(f_p,g),mkPlus(f,mkTimes(g_p, mkLog(cons(g))))));
+	    }
         }
         case ENODE_ID_ABS: {
             assert(e->getArity() == 1);

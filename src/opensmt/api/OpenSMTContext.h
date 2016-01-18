@@ -175,6 +175,8 @@ public:
   inline Enode * mkGeq       ( Enode * e )       { assert( e ); return egraph.mkGeq   ( e ); }
   inline Enode * mkGt        ( Enode * e )       { assert( e ); return egraph.mkGt    ( e ); }
 
+  inline Enode * mkPlus      ( Enode * e1, Enode * e2) {return egraph.mkPlus(e1,e2);}
+
   // added for dReal2
   inline Enode * mkAbs       ( Enode * e )       { assert(e); return egraph.mkAbs(e);}
   inline Enode * mkExp       ( Enode * e )       { assert(e); return egraph.mkExp(e);}
@@ -195,6 +197,9 @@ public:
   inline Enode * mkMatan     ( Enode * e )       { assert(e); return egraph.mkMatan(e);}
   inline Enode * mkSafeSqrt  ( Enode * e )       { assert(e); return egraph.mkSafeSqrt(e);}
   inline Enode * mkSqrt      ( Enode * e )       { assert(e); return egraph.mkSqrt(e);}
+
+  inline Enode * mkDeriv     ( Enode * e1 , Enode * e2)       { assert(e1); assert(e2); return egraph.mkDeriv(e1,e2);}
+
 
   inline Enode * mkForallT   ( Enode * mode, Enode * lb, Enode * ub, Enode * e ) { assert(e); return egraph.mkForallT(mode, lb, ub, e);}
   inline Enode * mkIntegral  ( Enode * time_0, Enode * time_t, Enode * vec_0, Enode * vec_t, const char * flowname ) {
