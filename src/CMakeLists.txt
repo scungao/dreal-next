@@ -18,7 +18,7 @@ option(BUILD_STATIC_BIN "Build static binary"  OFF)
 option(BUILD_SHARED_LIB "Build shared library" OFF)
 option(USE_LOCAL_THIRD_PARTY "Use local third party libraries" OFF)
 option(TCMALLOC         "Use tcmalloc (a.k.a. gperftools)" ON)
-option(Z3               "Use Z3" ON)
+option(Z3               "Use Z3" OFF)
 option(CORE_ONLY	"No tests" ON)
 
 # Added for CTest

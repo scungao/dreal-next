@@ -28,7 +28,7 @@ extern int invlex();
 // ===========
 OpenSMTContext * inv_ctx;
 double inv_prec; 
-unordered_map<Enode*,Enode*> inv_plant;
+unordered_map<Enode*, Enode*> inv_plant;
 Enode * inv_barrier;
 Enode * inv_barrierD;
 unordered_map<string, Enode*> inv_var_map;
@@ -96,7 +96,7 @@ script:         opt_prec_decl_sec
                 var_decl_sec
                 plant_decl_sec
                 barrier_decl_sec
-                barrierD_decl_sec
+                opt_barrierD_decl_sec
         ;
 
 numeral:        TK_NUM {
@@ -192,7 +192,8 @@ barrierD_decl:	exp TK_SEMICOLON {
         }
         ;
 
-barrierD_decl_sec:	TK_BARRIERD TK_COLON barrierD_decl
+opt_barrierD_decl_sec:
+	|	TK_BARRIERD TK_COLON barrierD_decl
 	;
 
 

@@ -152,11 +152,30 @@ int process_main(OpenSMTContext & ctx,
  //   Enode * tmp = ctx.mkDiv(ctx.mkCons(ctx.mkVar("x"),ctx.mkCons(ctx.mkVar("y"))));
  //   inv_barrier = ctx.mkDeriv(tmp,ctx.mkVar("x"));
  
-    Enode * tmp = ctx.mkDeriv(inv_barrier,ctx.mkVar("x"));
-    tmp -> print_infix(cout,l_True);
+ //   Enode * tmp = ctx.mkDeriv(inv_barrier,ctx.mkVar("x"));
+ //   tmp -> print_infix(cout,l_True);
  
+
     Enode * pre = ctx.mkEq(ctx.mkCons(inv_barrier, ctx.mkCons(ctx.mkNum("0"))));
-    Enode * post = ctx.mkLeq(ctx.mkCons(inv_barrierD, ctx.mkCons(ctx.mkNum("-0.001"))));
+
+    Enode * inv_bd = ctx.mkNum("0"); 
+    //compute the time derivative of barrier 
+    for (auto const item : inv_var_map) {
+	Enode * var = item.second;
+	Enode * lie_part = ctx.mkDeriv(inv_barrier,var);
+	cout<<"d(barrier)/d"<<var<<": "<<lie_part<<endl;
+	auto it = inv_plant.find(var);
+	Enode * flow = it->second;
+	cout<<"corresponding flow: "<<flow<<endl;
+        Enode * newterm = ctx.mkTimes(ctx.mkCons(flow,ctx.mkCons(lie_part)));
+	cout<<"new term: "<<newterm<<endl;
+	inv_bd = ctx.mkPlus(ctx.mkCons(inv_bd,ctx.mkCons(newterm)));
+	cout<<"--\n";
+    }
+
+    cout<<"derivative of barrier: "<<inv_bd<<endl;
+    Enode * post = ctx.mkLeq(ctx.mkCons(inv_bd, ctx.mkCons(ctx.mkNum("-0.001"))));
+
     Enode * formula = ctx.mkNot(ctx.mkCons(ctx.mkImplies(ctx.mkCons(pre,ctx.mkCons(post)))));
 
 //begin tests
@@ -170,9 +189,9 @@ int process_main(OpenSMTContext & ctx,
     auto result = ctx.CheckSAT();
     cout << "Result     : ";
     if (result == l_True) {
-        cout << "delta-sat" << endl;
+        cout << "Not a valid epsilon-barrier." << endl;
     } else {
-        cout << "unsat" << endl;
+        cout << "Yes, it is a valid barrier." << endl;
     }
     return 0;
 }
