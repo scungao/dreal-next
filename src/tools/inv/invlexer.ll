@@ -25,7 +25,7 @@
 "#".*                        { }
 "var"                        { return TK_VAR; }
 "cost"                       { return TK_COST; }
-"prec"                       { return TK_PREC; }
+"delta"                       { return TK_PREC; }
 "ctr"                        { return TK_CTR; }
 "plant"                      { return TK_PLANT; }
 "param"			     { return TK_PARAM; }
@@ -33,6 +33,7 @@
 "lyf"			     { return TK_LYF; }
 "barrier"		     { return TK_BARRIER; }
 "barrierD"		     { return TK_BARRIERD; }
+"epsilon"		     { return TK_EPSILON; }
 "d/dt"			     { return TK_DEV; }
 
 ","                          { return TK_COMMA; }

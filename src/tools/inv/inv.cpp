@@ -51,6 +51,7 @@ extern void inv_cleanup_parser();
 
 extern OpenSMTContext * inv_ctx;
 extern double inv_prec; 
+extern double inv_epsilon;
 extern unordered_map<Enode*,Enode*> inv_plant;
 extern unordered_map<string, Enode*> inv_var_map;
 extern Enode * inv_barrier;
@@ -163,18 +164,21 @@ int process_main(OpenSMTContext & ctx,
     for (auto const item : inv_var_map) {
 	Enode * var = item.second;
 	Enode * lie_part = ctx.mkDeriv(inv_barrier,var);
-	cout<<"d(barrier)/d"<<var<<": "<<lie_part<<endl;
+//	cout<<"d(barrier)/d"<<var<<": "<<lie_part<<endl;
 	auto it = inv_plant.find(var);
 	Enode * flow = it->second;
-	cout<<"corresponding flow: "<<flow<<endl;
+//	cout<<"corresponding flow: "<<flow<<endl;
         Enode * newterm = ctx.mkTimes(ctx.mkCons(flow,ctx.mkCons(lie_part)));
-	cout<<"new term: "<<newterm<<endl;
+//	cout<<"new term: "<<newterm<<endl;
 	inv_bd = ctx.mkPlus(ctx.mkCons(inv_bd,ctx.mkCons(newterm)));
-	cout<<"--\n";
+//	cout<<"--\n";
     }
 
-    cout<<"derivative of barrier: "<<inv_bd<<endl;
-    Enode * post = ctx.mkLeq(ctx.mkCons(inv_bd, ctx.mkCons(ctx.mkNum("-0.00001"))));
+//    cout<<"derivative of barrier: "<<inv_bd<<endl;
+
+    double eps = inv_epsilon;
+
+    Enode * post = ctx.mkLeq(ctx.mkCons(inv_bd, ctx.mkCons(ctx.mkNum(eps))));
 
     Enode * formula = ctx.mkNot(ctx.mkCons(ctx.mkImplies(ctx.mkCons(pre,ctx.mkCons(post)))));
 
@@ -187,9 +191,9 @@ int process_main(OpenSMTContext & ctx,
 
     ctx.Assert(formula);
     auto result = ctx.CheckSAT();
-    cout << "Result     : ";
+    cout << "Result: ";
     if (result == l_True) {
-        cout << "Not a valid epsilon-barrier." << endl;
+        cout << "Not a valid epsilon-barrier, where epsilon is " <<eps<<" and delta is "<<ctx.getPrecision()<<". Try a smaller epsilon or delta. "<< endl;
     } else {
         cout << "Yes, it is a valid barrier." << endl;
     }

@@ -86,7 +86,8 @@ config::config(int const argc, const char * argv[]) {
     }
     if (opt.isSet("--local-opt")) { set_local_opt(true); }
     if (opt.isSet("--debug")) { set_debug(true); }
-    if (opt.isSet("--polytope")) { set_polytope(true); }
+//    if (opt.isSet("--polytope")) { set_polytope(true); }
+    set_polytope(true);  //always set it
     if (opt.isSet("--no-sync")) { set_sync(false); }
     if (opt.isSet("--stat")) { set_stat(true); }
     if (opt.isSet("--worklist-fp")) { set_worklist_fp(true); }

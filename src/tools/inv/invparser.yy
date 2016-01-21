@@ -27,7 +27,8 @@ extern int invlex();
 // The result
 // ===========
 OpenSMTContext * inv_ctx;
-double inv_prec; 
+double inv_prec;
+double inv_epsilon; 
 unordered_map<Enode*, Enode*> inv_plant;
 Enode * inv_barrier;
 Enode * inv_barrierD;
@@ -51,6 +52,7 @@ void inv_init_parser() {
     inv_ctx = new OpenSMTContext();
     inv_ctx->SetLogic(QF_NRA);
     inv_prec = 0.0;
+    inv_epsilon = 0.001;
 }
 
 void inv_cleanup_parser() {
@@ -70,7 +72,7 @@ void inv_cleanup_parser() {
 
 %error-verbose
 
-%token TK_VAR TK_COST TK_PREC TK_CTR TK_PLANT TK_CONTROL TK_LYF TK_DEV TK_PARAM TK_BARRIER TK_BARRIERD
+%token TK_VAR TK_COST TK_PREC TK_CTR TK_PLANT TK_CONTROL TK_LYF TK_DEV TK_PARAM TK_BARRIER TK_BARRIERD TK_EPSILON
 %token TK_COMMA TK_COLON TK_SEMICOLON TK_PLUS TK_MINUS TK_TIMES TK_DIV TK_EQ TK_NEQ TK_LEQ TK_GEQ
 %token TK_LT TK_GT TK_SIN TK_COS TK_TAN TK_EXP TK_LOG TK_ABS TK_ASIN TK_ACOS TK_ATAN TK_SINH TK_COSH TK_TANH TK_MIN
 %token TK_MAX TK_ATAN2 TK_MATAN TK_SQRT TK_SAFESQRT TK_POW
@@ -92,8 +94,9 @@ void inv_cleanup_parser() {
 
 %%
 
-script:         opt_prec_decl_sec
-                var_decl_sec
+script:         opt_epsilon_decl_sec
+                opt_prec_decl_sec
+		var_decl_sec
                 plant_decl_sec
                 barrier_decl_sec
                 opt_barrierD_decl_sec
@@ -114,10 +117,18 @@ opt_prec_decl_sec:
         |       prec_decl_sec
         ;
 
-prec_decl_sec:  TK_PREC TK_COLON numeral {
+prec_decl_sec:  TK_PREC TK_COLON numeral TK_SEMICOLON {
                     inv_prec = $3;
         }
         ;
+
+opt_epsilon_decl_sec:
+	|	epsilon_decl_sec
+	;
+
+epsilon_decl_sec: TK_EPSILON TK_COLON numeral TK_SEMICOLON {
+		inv_epsilon = $3;
+	}
 
 // =============================
 // Variable Declaration Section
