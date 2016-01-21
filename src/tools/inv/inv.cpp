@@ -174,7 +174,7 @@ int process_main(OpenSMTContext & ctx,
     }
 
     cout<<"derivative of barrier: "<<inv_bd<<endl;
-    Enode * post = ctx.mkLeq(ctx.mkCons(inv_bd, ctx.mkCons(ctx.mkNum("-0.001"))));
+    Enode * post = ctx.mkLeq(ctx.mkCons(inv_bd, ctx.mkCons(ctx.mkNum("-0.00001"))));
 
     Enode * formula = ctx.mkNot(ctx.mkCons(ctx.mkImplies(ctx.mkCons(pre,ctx.mkCons(post)))));
 
